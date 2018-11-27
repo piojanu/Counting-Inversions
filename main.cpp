@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
         printf("%d, ", test[i]);
     printf("\n");
     
-    omp_set_nested(1);
+    omp_set_nested(0);
     size_t count = parallel_count_inversions(test.data(), test.size());
 
     printf("  sorted array: ");

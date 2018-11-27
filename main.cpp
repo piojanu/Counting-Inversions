@@ -57,7 +57,7 @@ size_t serial_count_inversions(int *data, size_t length) {
     return count;
 }
 
-size_t parallel_count_inversions(int *data, size_t length) {
+size_t parallel_count_inversions(int *data, size_t length, bool in_parallel=true) {
     /* Sort data array in ascending order and count inversions */
     if (length <= CUTOFF) {
         return serial_count_inversions(data, length);
@@ -70,14 +70,14 @@ size_t parallel_count_inversions(int *data, size_t length) {
     int *data_prime = data + half;
     size_t length_prime = length - half;
 
-#pragma omp parallel shared(count)
+#pragma omp parallel shared(count) if(in_parallel)
 #pragma omp single nowait
     {
         size_t left, right;
 #pragma omp task shared(left)
-        left = parallel_count_inversions(data, half);
+        left = parallel_count_inversions(data, half, false);
 #pragma omp task shared(right)
-        right = parallel_count_inversions(data_prime, length_prime);
+        right = parallel_count_inversions(data_prime, length_prime, false);
 #pragma omp taskwait
         count = left + right;
     }
@@ -122,7 +122,6 @@ int main(int argc, char **argv) {
         printf("%d, ", test[i]);
     printf("\n");
     
-    omp_set_nested(0);
     size_t count = parallel_count_inversions(test.data(), test.size());
 
     printf("  sorted array: ");
